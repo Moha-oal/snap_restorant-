@@ -564,7 +564,7 @@ label.f>span{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;co
       <article><span style="color:var(--gold)"><svg width="26" height="26" viewBox="0 0 24 24"><use href="#i-car"/></svg></span>
         <div><h3>خدمة السيارة</h3><p>اطلب واستلم من دون ما تنزل من سيارتك.</p></div></article>
       <article><span style="color:var(--gold)"><svg width="26" height="26" viewBox="0 0 24 24"><use href="#i-bag"/></svg></span>
-        <div><h3>توصيل بدون تلامس</h3><p>نوصّل طلبك ونتركه عند الباب إذا حبيت.</p></div></article>
+        <div><h3>على تطبيقات التوصيل</h3><p>ما عندنا توصيل خاص — تلقانا على تطبيقات التوصيل ويوصلك الطلب لباب البيت.</p></div></article>
       <article><span style="color:var(--gold)"><svg width="26" height="26" viewBox="0 0 24 24"><use href="#i-clock"/></svg></span>
         <div><h3>مفتوح حتى الفجر</h3><p>المطبخ شغّال من 10 صباحًا إلى 4 فجرًا كل يوم.</p></div></article>
     </div>
@@ -791,11 +791,18 @@ label.f>span{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;co
         <div class="choice">
           <label><input type="radio" name="otype" value="داخل المطعم" checked><span>داخل المطعم</span></label>
           <label><input type="radio" name="otype" value="استلام"><span>استلام</span></label>
-          <label><input type="radio" name="otype" value="توصيل"><span>توصيل</span></label>
         </div>
       </div>
 
-      <label class="f" id="addrWrap" hidden><span>عنوان التوصيل</span><textarea id="fAddr" rows="2" placeholder="اسم المبنى، رقم الوحدة، والمنطقة"></textarea></label>
+      <!-- المطعم بلا توصيل خاص — التوصيل يتم عبر التطبيقات. ضع روابط صفحة المطعم مكان # -->
+      <div class="f" style="background:var(--night-3);border:1px solid var(--line);border-radius:10px;padding:13px 15px">
+        <span style="display:block;font-size:13.5px;font-weight:600;margin-bottom:7px;color:#D6CBBC">تبغى توصيل؟</span>
+        <p style="margin:0 0 11px;font-size:13.5px;color:var(--muted);line-height:1.7">ما عندنا خدمة توصيل خاصة. اطلب من تطبيقات التوصيل ويوصلك الطلب لباب البيت.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="btn btn-ghost" href="#" target="_blank" rel="noopener">GrabFood</a>
+          <a class="btn btn-ghost" href="#" target="_blank" rel="noopener">foodpanda</a>
+        </div>
+      </div>
       <label class="f"><span>ملاحظات للمطبخ <span style="color:var(--muted);font-weight:400">(اختياري)</span></span><input id="fNote" type="text" placeholder="مثال: حار زيادة، بدون بصل"></label>
 
       <div class="f"><span style="display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;color:#D6CBBC">طريقة الدفع</span>
@@ -887,7 +894,9 @@ const MENU=[
 ];
 
 const SIG=['m1','b1','w1','s1','t1'];
-const SST=0.06, DELIVERY=5, WA='60176693919';
+const SST=0.06, WA='60176693919';
+const TG_TOKEN='8903133864:AAGlIieSjtmmFDL-ELbrepDM36Di6TlsPmA';
+const TG_CHAT='PUT_CHAT_ID_HERE';
 const byId=id=>MENU.find(m=>m.id===id);
 const rm=n=>'RM '+n.toFixed(2);
 const $=s=>document.querySelector(s);
@@ -936,9 +945,8 @@ function setQty(id,n){n<=0?cart.delete(id):cart.set(id,n);paint();}
 
 function totals(){
   let sub=0; cart.forEach((q,id)=>sub+=byId(id).p*q);
-  const del=(document.querySelector('input[name="otype"]:checked')||{}).value==='توصيل'?DELIVERY:0;
   const tax=sub*SST;
-  return {sub,tax,del,grand:sub+tax+del};
+  return {sub,tax,grand:sub+tax};
 }
 
 function paint(){
@@ -984,7 +992,6 @@ function ckSummary(){
   $('#ckSum').innerHTML=
     [...cart].map(([id,q])=>{const m=byId(id);return `<div><span>${m.ar} × ${q}</span><span>${rm(m.p*q)}</span></div>`}).join('')
     +`<div><span>ضريبة الخدمة 6%</span><span>${rm(t.tax)}</span></div>`
-    +(t.del?`<div><span>رسوم التوصيل</span><span>${rm(t.del)}</span></div>`:'')
     +`<div class="t"><span>الإجمالي</span><span>${rm(t.grand)}</span></div>`;
 }
 function openModal(){
@@ -998,8 +1005,6 @@ $('#closeModal').onclick=()=>{closeModal();scrim.classList.remove('on');};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeCart();}});
 
 document.querySelectorAll('input[name="otype"]').forEach(r=>r.addEventListener('change',()=>{
-  $('#addrWrap').hidden=r.value!=='توصيل'||!r.checked;
-  if(document.querySelector('input[name="otype"]:checked').value!=='توصيل')$('#addrWrap').hidden=true;
   paint(); ckSummary();
 }));
 document.querySelectorAll('input[name="pay"]').forEach(r=>r.addEventListener('change',()=>{
@@ -1023,41 +1028,70 @@ $('#fExp').addEventListener('input',e=>{
 });
 $('#fCvv').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'')});
 
+async function tgSend(text){
+  const r=await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:TG_CHAT,text,disable_web_page_preview:true})
+  });
+  const j=await r.json().catch(()=>({ok:false}));
+  if(!j.ok) throw new Error(j.description||'telegram failed');
+}
+
+function orderSent(name,num,pay,grand){
+  cart.clear(); paint();
+  $('#ckTitle').textContent='تم إرسال الطلب';
+  $('#ckBody').innerHTML=`
+    <div class="done">
+      <div class="ok">✓</div>
+      <h4>وصل طلبك للمطبخ يا ${name.split(' ')[0]}</h4>
+      <div class="onum">${num}</div>
+      ${pay!=='online'?`<p>ادفع كاش عند الاستلام: ${rm(grand)}</p>`:''}
+      <button class="btn btn-ghost wide" style="margin-top:10px" id="againBtn">طلب جديد</button>
+    </div>`;
+  $('#againBtn').onclick=()=>location.reload();
+}
+
+function orderFail(msg,name,num,pay,grand,btn){
+  $('#ckTitle').textContent='ما قدرنا نرسل الطلب';
+  $('#ckBody').innerHTML=`
+    <div class="done">
+      <p>صار خلل في الإرسال. جرّب مرة ثانية، أو أرسله على واتساب.</p>
+      <button class="btn btn-gold wide" id="retryTg">حاول مرة ثانية</button>
+      <a class="btn btn-wa wide" style="margin-top:10px" href="https://wa.me/${WA}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">أرسله على واتساب</a>
+    </div>`;
+  btn.disabled=false;
+  btn.innerHTML='تأكيد الطلب';
+  const po=$('#placeOrder');
+  if(po){po.disabled=false;po.innerHTML='تأكيد الطلب';}
+  $('#retryTg').onclick=async function(){
+    this.disabled=true;
+    this.innerHTML='<span class="spin"></span> جارٍ إرسال الطلب…';
+    try{await tgSend(msg);orderSent(name,num,pay,grand);}
+    catch(e){this.disabled=false;this.innerHTML='حاول مرة ثانية';}
+  };
+}
+
 /* place order */
-$('#placeOrder').onclick=function(){
+$('#placeOrder').onclick=async function(){
   const name=$('#fName').value.trim(), phone=$('#fPhone').value.trim();
   if(!name){toast('اكتب اسمك من فضلك');$('#fName').focus();return;}
   if(phone.replace(/\D/g,'').length<9){toast('اكتب رقم جوال صحيح');$('#fPhone').focus();return;}
   const otype=document.querySelector('input[name="otype"]:checked').value;
-  if(otype==='توصيل'&&!$('#fAddr').value.trim()){toast('اكتب عنوان التوصيل');$('#fAddr').focus();return;}
   const pay=document.querySelector('input[name="pay"]:checked').value;
 
+  const t=totals(), num='SNAP-'+Math.floor(1000+Math.random()*9000);
+  const lines=[...cart].map(([id,q])=>`• ${byId(id).ar} × ${q} — ${rm(byId(id).p*q)}`).join('\n');
+  const msg=`طلب جديد من موقع مطعم سناب\nرقم الطلب: ${num}\n\n${lines}\n\nالإجمالي: ${rm(t.grand)}\nنوع الطلب: ${otype}`
+    +`\nالدفع: ${pay==='online'?'أونلاين ('+wallet+') — عرض توضيحي':'كاش عند الاستلام'}`
+    +($('#fNote').value.trim()?`\nملاحظات: ${$('#fNote').value.trim()}`:'')
+    +`\n\nالاسم: ${name}\nالجوال: ${phone}`;
+
   const btn=this; btn.disabled=true;
-  btn.innerHTML=pay==='online'?'<span class="spin"></span> جارٍ معالجة الدفع…':'<span class="spin"></span> جارٍ إرسال الطلب…';
+  btn.innerHTML='<span class="spin"></span> جارٍ إرسال الطلب…';
 
-  setTimeout(()=>{
-    const t=totals(), num='SNAP-'+Math.floor(1000+Math.random()*9000);
-    const lines=[...cart].map(([id,q])=>`• ${byId(id).ar} × ${q} — ${rm(byId(id).p*q)}`).join('\n');
-    const msg=`طلب جديد من موقع مطعم سناب\nرقم الطلب: ${num}\n\n${lines}\n\nالإجمالي: ${rm(t.grand)}\nنوع الطلب: ${otype}`
-      +(otype==='توصيل'?`\nالعنوان: ${$('#fAddr').value.trim()}`:'')
-      +`\nالدفع: ${pay==='online'?'أونلاين ('+wallet+') — عرض توضيحي':'كاش عند الاستلام'}`
-      +($('#fNote').value.trim()?`\nملاحظات: ${$('#fNote').value.trim()}`:'')
-      +`\n\nالاسم: ${name}\nالجوال: ${phone}`;
-
-    $('#ckTitle').textContent='تم استلام الطلب';
-    $('#ckBody').innerHTML=`
-      <div class="done">
-        <div class="ok">✓</div>
-        <h4>وصلنا طلبك يا ${name.split(' ')[0]}</h4>
-        <p>${pay==='online'?'الدفع تم في الوضع التوضيحي — ما انخصم أي مبلغ حقيقي.':'ادفع كاش عند الاستلام: '+rm(t.grand)}</p>
-        <div class="onum">${num}</div>
-        <p style="margin-bottom:18px">أرسل الطلب للمطبخ على واتساب عشان يبدأون التحضير فورًا.</p>
-        <a class="btn btn-wa wide" href="https://wa.me/${WA}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">إرسال الطلب على واتساب</a>
-        <button class="btn btn-ghost wide" style="margin-top:10px" id="againBtn">طلب جديد</button>
-      </div>`;
-    cart.clear(); paint();
-    $('#againBtn').onclick=()=>location.reload();
-  },pay==='online'?1600:900);
+  try{await tgSend(msg);orderSent(name,num,pay,t.grand);}
+  catch(e){orderFail(msg,name,num,pay,t.grand,btn);}
 };
 
 /* ---------- opening hours ---------- */
