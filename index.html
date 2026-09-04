@@ -289,14 +289,7 @@ label.f>span{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;co
 .choice input:checked+span{border-color:var(--gold);background:rgba(242,176,60,.14);color:var(--gold-lt)}
 .choice input:focus-visible+span{outline:2px solid var(--gold);outline-offset:2px}
 .pay2{grid-template-columns:1fr 1fr}
-.demo-note{display:flex;gap:9px;align-items:flex-start;background:rgba(242,176,60,.09);
-  border:1px dashed rgba(242,176,60,.42);border-radius:10px;padding:11px 13px;font-size:13px;color:#E4CFA6;margin-bottom:16px}
-.fakecard{background:linear-gradient(135deg,#2A1F18,#191210);border:1px solid var(--line);
-  border-radius:14px;padding:16px;margin-bottom:16px}
-.ewallets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.ewallets button{flex:1;min-width:88px;padding:10px;border-radius:10px;border:1px solid var(--line);
-  font-size:12.5px;font-weight:700;color:#C7BAAB}
-.ewallets button[aria-pressed="true"]{border-color:var(--gold);background:rgba(242,176,60,.14);color:var(--gold-lt)}
+.pay-hint{margin:8px 0 0;font-size:13.5px;color:var(--muted)}
 .sum{background:#100C0A;border:1px solid var(--line-2);border-radius:12px;padding:14px 16px;margin-bottom:18px;font-size:14px}
 .sum div{display:flex;justify-content:space-between;color:var(--muted);padding:3px 0}
 .sum div.t{color:var(--gold-lt);font-weight:800;font-size:16.5px;border-top:1px dashed var(--line);margin-top:8px;padding-top:9px}
@@ -805,42 +798,14 @@ label.f>span{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;co
         </div>
       </div>
 
-      <!-- المطعم بلا توصيل خاص — التوصيل يتم عبر التطبيقات. ضع روابط صفحة المطعم مكان # -->
-      <div class="f" style="background:var(--night-3);border:1px solid var(--line);border-radius:10px;padding:13px 15px">
-        <span style="display:block;font-size:13.5px;font-weight:600;margin-bottom:7px;color:#D6CBBC">تبغى توصيل؟</span>
-        <p style="margin:0 0 11px;font-size:13.5px;color:var(--muted);line-height:1.7">ما عندنا خدمة توصيل خاصة. اطلب من تطبيقات التوصيل ويوصلك الطلب لباب البيت.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a class="btn btn-ghost" href="#" target="_blank" rel="noopener">GrabFood</a>
-          <a class="btn btn-ghost" href="#" target="_blank" rel="noopener">foodpanda</a>
-        </div>
-      </div>
       <label class="f"><span>ملاحظات للمطبخ <span style="color:var(--muted);font-weight:400">(اختياري)</span></span><input id="fNote" type="text" placeholder="مثال: حار زيادة، بدون بصل"></label>
 
       <div class="f"><span style="display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;color:#D6CBBC">طريقة الدفع</span>
         <div class="choice pay2">
-          <label><input type="radio" name="pay" value="cash" checked><span>كاش عند الاستلام</span></label>
-          <label><input type="radio" name="pay" value="online"><span>الدفع أونلاين</span></label>
+          <label><input type="radio" name="pay" value="cash" checked><span>كاش</span></label>
+          <label><input type="radio" name="pay" value="card"><span>بطاقة</span></label>
         </div>
-      </div>
-
-      <div id="onlineBox" hidden>
-        <div class="demo-note">
-          <span style="color:var(--gold);flex:0 0 auto">⚠</span>
-          <span>واجهة الدفع هذي <b>عرض توضيحي فقط</b> وغير موصولة بأي بوابة دفع. لا تُدخل بيانات بطاقة حقيقية — أي شيء تكتبه هنا يبقى في متصفحك ولا يُرسل لأي جهة.</span>
-        </div>
-        <div class="ewallets">
-          <button type="button" aria-pressed="true" data-w="بطاقة">بطاقة بنكية</button>
-          <button type="button" aria-pressed="false" data-w="FPX">FPX</button>
-          <button type="button" aria-pressed="false" data-w="Touch 'n Go">Touch 'n Go</button>
-          <button type="button" aria-pressed="false" data-w="GrabPay">GrabPay</button>
-        </div>
-        <div class="fakecard" id="cardFields">
-          <label class="f"><span>رقم البطاقة</span><input id="fCard" type="text" inputmode="numeric" placeholder="4242 4242 4242 4242" autocomplete="off" maxlength="19"></label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <label class="f"><span>تاريخ الانتهاء</span><input id="fExp" type="text" placeholder="MM/YY" autocomplete="off" maxlength="5"></label>
-            <label class="f"><span>CVV</span><input id="fCvv" type="text" inputmode="numeric" placeholder="123" autocomplete="off" maxlength="4"></label>
-          </div>
-        </div>
+        <p class="pay-hint" id="payHint">نجيب لك جهاز الشبكة للطاولة.</p>
       </div>
 
       <div class="sum" id="ckSum"></div>
@@ -1041,33 +1006,13 @@ function syncNeedFields(){
   $('#phoneWrap').hidden=dineNoTable;
   $('#phoneLbl').textContent=atTable?'رقم الجوال (اختياري)':'رقم الجوال';
   $('#tableWrap').hidden=!dineNoTable;
+  $('#payHint').textContent=otype==='استلام'?'تدفع بالبطاقة عند الاستلام.':'نجيب لك جهاز الشبكة للطاولة.';
 }
 applyTableMode();
 
 document.querySelectorAll('input[name="otype"]').forEach(r=>r.addEventListener('change',()=>{
   paint(); ckSummary(); syncNeedFields();
 }));
-document.querySelectorAll('input[name="pay"]').forEach(r=>r.addEventListener('change',()=>{
-  $('#onlineBox').hidden=document.querySelector('input[name="pay"]:checked').value!=='online';
-}));
-
-/* e-wallet picker — decorative only */
-let wallet='بطاقة';
-document.querySelectorAll('.ewallets button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.ewallets button').forEach(x=>x.setAttribute('aria-pressed','false'));
-  b.setAttribute('aria-pressed','true'); wallet=b.dataset.w;
-  $('#cardFields').hidden = wallet!=='بطاقة';
-});
-/* cosmetic formatting only — nothing is stored or sent */
-$('#fCard').addEventListener('input',e=>{
-  e.target.value=e.target.value.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();
-});
-$('#fExp').addEventListener('input',e=>{
-  let v=e.target.value.replace(/\D/g,'').slice(0,4);
-  e.target.value=v.length>2?v.slice(0,2)+'/'+v.slice(2):v;
-});
-$('#fCvv').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'')});
-
 async function tgSend(text){
   const url=`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`;
   const fd=new FormData();
@@ -1087,21 +1032,24 @@ async function tgSend(text){
   }
 }
 
-function orderSent(name,num,pay,grand){
+function orderSent(name,num,pay,grand,otype){
   cart.clear(); paint();
+  const payDone=pay==='card'
+    ?(otype==='استلام'?'تدفع بالبطاقة عند الاستلام.':'الكاشير بيوصلك جهاز الشبكة للطاولة.')
+    :('ادفع كاش: '+rm(grand));
   $('#ckTitle').textContent='تم إرسال الطلب';
   $('#ckBody').innerHTML=`
     <div class="done">
       <div class="ok">✓</div>
       <h4>وصل طلبك للمطبخ يا ${name.split(' ')[0]}</h4>
       <div class="onum">${num}</div>
-      ${pay!=='online'?`<p>ادفع كاش عند الاستلام: ${rm(grand)}</p>`:''}
+      <p>${payDone}</p>
       <button class="btn btn-ghost wide" style="margin-top:10px" id="againBtn">طلب جديد</button>
     </div>`;
   $('#againBtn').onclick=()=>location.reload();
 }
 
-function orderFail(msg,name,num,pay,grand){
+function orderFail(msg,name,num,pay,grand,otype){
   $('#ckTitle').textContent='ما قدرنا نرسل الطلب';
   $('#ckBody').innerHTML=`
     <div class="done">
@@ -1114,7 +1062,7 @@ function orderFail(msg,name,num,pay,grand){
   btn.onclick=async function(){
     this.disabled=true;
     this.innerHTML='<span class="spin"></span> جارٍ إرسال الطلب…';
-    try{await tgSend(msg);orderSent(name,num,pay,grand);}
+    try{await tgSend(msg);orderSent(name,num,pay,grand,otype);}
     catch(e){this.disabled=false;this.innerHTML='حاول مرة ثانية';}
   };
 }
@@ -1133,17 +1081,20 @@ $('#placeOrder').onclick=async function(){
 
   const t=totals(), num='SNAP-'+Math.floor(1000+Math.random()*9000);
   const lines=[...cart].map(([id,q])=>`• ${byId(id).ar} × ${q} — ${rm(byId(id).p*q)}`).join('\n');
+  const payLine=pay==='card'
+    ?(tableNum?`الدفع: بطاقة — جهّزوا جهاز الشبكة للطاولة رقم ${tableNum}`:'الدفع: بطاقة عند الاستلام')
+    :'الدفع: كاش';
   const msg=`طلب جديد من موقع مطعم سناب\nرقم الطلب: ${num}\n\n${lines}\n\nالإجمالي: ${rm(t.grand)}\nنوع الطلب: ${otype}`
     +(tableNum?`\nالطاولة: ${tableNum}`:'')
-    +`\nالدفع: ${pay==='online'?'أونلاين ('+wallet+') — عرض توضيحي':'كاش عند الاستلام'}`
+    +`\n${payLine}`
     +($('#fNote').value.trim()?`\nملاحظات: ${$('#fNote').value.trim()}`:'')
     +`\n\nالاسم: ${name}\nالجوال: ${phone||'—'}`;
 
   const btn=this; btn.disabled=true;
   btn.innerHTML='<span class="spin"></span> جارٍ إرسال الطلب…';
 
-  try{await tgSend(msg);orderSent(name,num,pay,t.grand);}
-  catch(e){console.error('Telegram send failed:',e);orderFail(msg,name,num,pay,t.grand);}
+  try{await tgSend(msg);orderSent(name,num,pay,t.grand,otype);}
+  catch(e){console.error('Telegram send failed:',e);orderFail(msg,name,num,pay,t.grand,otype);}
 };
 
 /* ---------- opening hours ---------- */
