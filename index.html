@@ -27,6 +27,7 @@
   --chair:#E23B2E;
   --line:rgba(247,240,228,.11);
   --line-2:rgba(247,240,228,.06);
+  --petrol:#1B8A84;
   --wrap:1180px;
   --r:14px;
 }
@@ -80,6 +81,11 @@ header{position:sticky;top:0;z-index:50}
 .status{display:inline-flex;align-items:center;gap:7px;font-weight:600}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 9px var(--mint)}
 .dot.shut{background:var(--red);box-shadow:0 0 9px var(--red)}
+.tbl-chip{display:inline-flex;align-items:center;gap:7px;font-weight:600;color:var(--petrol)}
+.tbl-chip .dot{background:var(--petrol);box-shadow:0 0 9px var(--petrol)}
+.tbl-chip .num{font-weight:800}
+.tbl-chip[hidden]{display:none!important}
+#ckTable{margin-bottom:16px}
 .topbar a{color:var(--muted)}
 .topbar a:hover{color:var(--gold)}
 nav.bar{background:rgba(12,10,9,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
@@ -466,7 +472,10 @@ label.f>span{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;co
 <header>
   <div class="topbar">
     <div class="wrap">
-      <span class="status"><i class="dot" id="dot"></i><span id="statusTxt">جارٍ التحقق…</span></span>
+      <span style="display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span class="status"><i class="dot" id="dot"></i><span id="statusTxt">جارٍ التحقق…</span></span>
+        <span class="tbl-chip" id="hdrTable" hidden><i class="dot"></i>الطاولة رقم <span class="num"></span></span>
+      </span>
       <span><a href="tel:+60176693919">017-669 3919</a></span>
     </div>
   </div>
@@ -784,10 +793,12 @@ label.f>span{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;co
       <button class="x" id="closeModal" aria-label="إغلاق">✕</button>
     </div>
     <div class="sheet-b" id="ckBody">
+      <div class="tbl-chip" id="ckTable" hidden><i class="dot"></i>الطاولة رقم <span class="num"></span></div>
       <label class="f"><span>الاسم</span><input id="fName" type="text" placeholder="اسمك الكامل" autocomplete="name"></label>
-      <label class="f"><span>رقم الجوال</span><input id="fPhone" type="tel" placeholder="01X-XXX XXXX" autocomplete="tel"></label>
+      <label class="f" id="phoneWrap"><span id="phoneLbl">رقم الجوال</span><input id="fPhone" type="tel" placeholder="01X-XXX XXXX" autocomplete="tel"></label>
+      <label class="f" id="tableWrap" hidden><span>رقم الطاولة</span><input id="fTable" type="text" inputmode="numeric" placeholder="مثال: 7" autocomplete="off"></label>
 
-      <div class="f"><span style="display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;color:#D6CBBC">نوع الطلب</span>
+      <div class="f" id="otypeWrap"><span style="display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;color:#D6CBBC">نوع الطلب</span>
         <div class="choice">
           <label><input type="radio" name="otype" value="داخل المطعم" checked><span>داخل المطعم</span></label>
           <label><input type="radio" name="otype" value="استلام"><span>استلام</span></label>
@@ -897,6 +908,11 @@ const SIG=['m1','b1','w1','s1','t1'];
 const SST=0.06, WA='60176693919';
 const TG_TOKEN='8903133854:AAGlIieSjtmmFDL-ELbrepDM36Di5TlsPmA';
 const TG_CHAT='-5563677420';
+const TABLE=(()=>{
+  const fromUrl=(new URLSearchParams(location.search).get('table')||'').trim();
+  if(fromUrl){sessionStorage.setItem('snapTable',fromUrl);return fromUrl;}
+  return (sessionStorage.getItem('snapTable')||'').trim();
+})();
 const byId=id=>MENU.find(m=>m.id===id);
 const rm=n=>'RM '+n.toFixed(2);
 const $=s=>document.querySelector(s);
@@ -996,7 +1012,7 @@ function ckSummary(){
 }
 function openModal(){
   if(!cart.size){toast('السلة فاضية — اختر طبق أولًا');return;}
-  closeCart(); ckSummary(); modal.classList.add('on'); scrim.classList.add('on');
+  closeCart(); ckSummary(); syncNeedFields(); modal.classList.add('on'); scrim.classList.add('on');
   $('#fName').focus();
 }
 function closeModal(){modal.classList.remove('on');}
@@ -1004,8 +1020,32 @@ $('#toCheckout').onclick=openModal;
 $('#closeModal').onclick=()=>{closeModal();scrim.classList.remove('on');};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeCart();}});
 
+function applyTableMode(){
+  document.querySelectorAll('.tbl-chip').forEach(c=>{
+    const n=c.querySelector('.num'); if(n) n.textContent=TABLE;
+    c.hidden=!TABLE;
+  });
+  if(TABLE){
+    const dine=document.querySelector('input[name="otype"][value="داخل المطعم"]');
+    if(dine) dine.checked=true;
+    $('#otypeWrap').hidden=true;
+  }else{
+    $('#otypeWrap').hidden=false;
+  }
+  syncNeedFields();
+}
+function syncNeedFields(){
+  const otype=(document.querySelector('input[name="otype"]:checked')||{}).value||'داخل المطعم';
+  const atTable=!!TABLE;
+  const dineNoTable=!atTable && otype==='داخل المطعم';
+  $('#phoneWrap').hidden=dineNoTable;
+  $('#phoneLbl').textContent=atTable?'رقم الجوال (اختياري)':'رقم الجوال';
+  $('#tableWrap').hidden=!dineNoTable;
+}
+applyTableMode();
+
 document.querySelectorAll('input[name="otype"]').forEach(r=>r.addEventListener('change',()=>{
-  paint(); ckSummary();
+  paint(); ckSummary(); syncNeedFields();
 }));
 document.querySelectorAll('input[name="pay"]').forEach(r=>r.addEventListener('change',()=>{
   $('#onlineBox').hidden=document.querySelector('input[name="pay"]:checked').value!=='online';
@@ -1081,18 +1121,23 @@ function orderFail(msg,name,num,pay,grand){
 
 /* place order */
 $('#placeOrder').onclick=async function(){
-  const name=$('#fName').value.trim(), phone=$('#fPhone').value.trim();
+  const name=$('#fName').value.trim();
   if(!name){toast('اكتب اسمك من فضلك');$('#fName').focus();return;}
-  if(phone.replace(/\D/g,'').length<9){toast('اكتب رقم جوال صحيح');$('#fPhone').focus();return;}
-  const otype=document.querySelector('input[name="otype"]:checked').value;
+  const otype=TABLE?'داخل المطعم':document.querySelector('input[name="otype"]:checked').value;
+  const tableNum=TABLE || (otype==='داخل المطعم'?$('#fTable').value.trim():'');
+  if(!TABLE && otype==='داخل المطعم' && !tableNum){toast('اكتب رقم الطاولة');$('#fTable').focus();return;}
+  const phone=$('#fPhone').value.trim();
+  if(otype==='استلام' && phone.replace(/\D/g,'').length<9){toast('اكتب رقم جوال صحيح');$('#fPhone').focus();return;}
+  if(TABLE && phone && phone.replace(/\D/g,'').length<9){toast('اكتب رقم جوال صحيح');$('#fPhone').focus();return;}
   const pay=document.querySelector('input[name="pay"]:checked').value;
 
   const t=totals(), num='SNAP-'+Math.floor(1000+Math.random()*9000);
   const lines=[...cart].map(([id,q])=>`• ${byId(id).ar} × ${q} — ${rm(byId(id).p*q)}`).join('\n');
   const msg=`طلب جديد من موقع مطعم سناب\nرقم الطلب: ${num}\n\n${lines}\n\nالإجمالي: ${rm(t.grand)}\nنوع الطلب: ${otype}`
+    +(tableNum?`\nالطاولة: ${tableNum}`:'')
     +`\nالدفع: ${pay==='online'?'أونلاين ('+wallet+') — عرض توضيحي':'كاش عند الاستلام'}`
     +($('#fNote').value.trim()?`\nملاحظات: ${$('#fNote').value.trim()}`:'')
-    +`\n\nالاسم: ${name}\nالجوال: ${phone}`;
+    +`\n\nالاسم: ${name}\nالجوال: ${phone||'—'}`;
 
   const btn=this; btn.disabled=true;
   btn.innerHTML='<span class="spin"></span> جارٍ إرسال الطلب…';

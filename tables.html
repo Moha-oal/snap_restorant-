@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بطاقات الطاولات — مطعم سناب</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Rakkas&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0C0A09;
+  --night-2:#16110E;
+  --night-3:#201814;
+  --cream:#F7F0E4;
+  --muted:#A9998A;
+  --gold:#F2B03C;
+  --gold-lt:#FFDE9E;
+  --line:rgba(247,240,228,.11);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--night);color:var(--cream);
+  font-family:'Cairo',system-ui,sans-serif;font-size:16px;line-height:1.7;
+}
+.wrap{max-width:980px;margin:0 auto;padding:28px 22px 60px}
+.controls{
+  background:var(--night-2);border:1px solid var(--line);border-radius:16px;
+  padding:22px 22px 18px;margin-bottom:28px;
+}
+.controls h1{font-family:'Rakkas',serif;font-weight:400;font-size:32px;color:var(--gold-lt);margin:0 0 6px}
+.controls p{margin:0 0 18px;color:var(--muted);font-size:14.5px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+label.f{flex:1 1 220px}
+label.f span{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#D6CBBC}
+label.f input{
+  width:100%;padding:11px 13px;border-radius:10px;background:#100C0A;
+  border:1px solid var(--line);color:var(--cream);font-family:inherit;font-size:15px;
+}
+.btn-gold{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:12px 26px;border:0;border-radius:11px;cursor:pointer;font-family:inherit;
+  font-weight:800;font-size:15.5px;color:#3A2404;
+  background:linear-gradient(180deg,#FFC95E,var(--gold));box-shadow:0 4px 0 #9E6A12;
+}
+.cards{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;
+}
+.tcard{
+  background:var(--night-2);border:1px solid var(--line);border-radius:16px;
+  padding:22px 16px 18px;text-align:center;break-inside:avoid;page-break-inside:avoid;
+}
+.tnum{font-family:'Rakkas',serif;font-size:52px;line-height:1;color:var(--gold-lt);margin:0 0 8px}
+.tqr{display:grid;place-items:center;margin:10px auto 14px;background:#fff;padding:10px;border-radius:10px;width:fit-content}
+.tqr img,.tqr canvas{display:block}
+.tname{font-weight:800;font-size:18px;color:var(--gold);margin:0 0 4px}
+.thint{font-size:13px;color:var(--muted);margin:0}
+@media print{
+  html,body{background:#fff;color:#000}
+  .controls{display:none!important}
+  .wrap{max-width:none;padding:8mm}
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10mm 12mm}
+  .tcard{
+    background:#fff;border:2px solid #000;border-radius:0;color:#000;
+    break-inside:avoid;page-break-inside:avoid;
+  }
+  .tnum,.tname,.thint{color:#000}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="controls">
+    <h1>بطاقات الطاولات</h1>
+    <p>صفحة داخلية للمطبخ. ولّد البطاقات ثم اطبعها من المتصفح (Ctrl+P) والصق كل كود على طاولته.</p>
+    <div class="row">
+      <label class="f"><span>رابط الموقع</span><input id="base" type="url" placeholder="https://snap.example.com/index.html"></label>
+      <label class="f" style="flex:0 0 140px"><span>عدد الطاولات</span><input id="count" type="number" min="1" max="200" value="12"></label>
+      <button class="btn-gold" id="gen" type="button">توليد</button>
+    </div>
+  </div>
+  <div class="cards" id="cards"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const guess = location.href.replace(/tables\.html.*$/i,'index.html');
+  $('#base').value = /^https?:/i.test(guess) ? guess : 'https://snap.example.com/index.html';
+
+  function qrHref(base, n){
+    const u = base.trim();
+    if(!u) return '';
+    return u + (u.includes('?') ? '&' : '?') + 'table=' + encodeURIComponent(n);
+  }
+
+  $('#gen').onclick = function(){
+    const base = $('#base').value.trim();
+    const n = Math.max(1, Math.min(200, parseInt($('#count').value,10) || 0));
+    if(!base){ $('#base').focus(); return; }
+    const box = $('#cards');
+    box.innerHTML = '';
+    for(let i=1;i<=n;i++){
+      const card = document.createElement('article');
+      card.className = 'tcard';
+      card.innerHTML =
+        '<div class="tnum">'+i+'</div>'+
+        '<div class="tqr" id="qr-'+i+'"></div>'+
+        '<p class="tname">مطعم سناب</p>'+
+        '<p class="thint">امسح الكود واطلب من طاولتك</p>';
+      box.appendChild(card);
+      new QRCode(card.querySelector('.tqr'), {
+        text: qrHref(base, i),
+        width: 148,
+        height: 148,
+        colorDark: '#0C0A09',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+  };
+})();
+</script>
+</body>
+</html>
