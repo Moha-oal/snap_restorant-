@@ -895,8 +895,8 @@ const MENU=[
 
 const SIG=['m1','b1','w1','s1','t1'];
 const SST=0.06, WA='60176693919';
-const TG_TOKEN='8903133864:AAGlIieSjtmmFDL-ELbrepDM36Di6TlsPmA';
-const TG_CHAT='PUT_CHAT_ID_HERE';
+const TG_TOKEN='8903133854:AAGlIieSjtmmFDL-ELbrepDM36Di5TlsPmA';
+const TG_CHAT='-5563677420';
 const byId=id=>MENU.find(m=>m.id===id);
 const rm=n=>'RM '+n.toFixed(2);
 const $=s=>document.querySelector(s);
@@ -1052,19 +1052,17 @@ function orderSent(name,num,pay,grand){
   $('#againBtn').onclick=()=>location.reload();
 }
 
-function orderFail(msg,name,num,pay,grand,btn){
+function orderFail(msg,name,num,pay,grand){
   $('#ckTitle').textContent='ما قدرنا نرسل الطلب';
   $('#ckBody').innerHTML=`
     <div class="done">
       <p>صار خلل في الإرسال. جرّب مرة ثانية، أو أرسله على واتساب.</p>
-      <button class="btn btn-gold wide" id="retryTg">حاول مرة ثانية</button>
+      <button class="btn btn-gold wide" id="placeOrder">حاول مرة ثانية</button>
       <a class="btn btn-wa wide" style="margin-top:10px" href="https://wa.me/${WA}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">أرسله على واتساب</a>
     </div>`;
+  const btn=$('#placeOrder');
   btn.disabled=false;
-  btn.innerHTML='تأكيد الطلب';
-  const po=$('#placeOrder');
-  if(po){po.disabled=false;po.innerHTML='تأكيد الطلب';}
-  $('#retryTg').onclick=async function(){
+  btn.onclick=async function(){
     this.disabled=true;
     this.innerHTML='<span class="spin"></span> جارٍ إرسال الطلب…';
     try{await tgSend(msg);orderSent(name,num,pay,grand);}
@@ -1091,7 +1089,7 @@ $('#placeOrder').onclick=async function(){
   btn.innerHTML='<span class="spin"></span> جارٍ إرسال الطلب…';
 
   try{await tgSend(msg);orderSent(name,num,pay,t.grand);}
-  catch(e){orderFail(msg,name,num,pay,t.grand,btn);}
+  catch(e){orderFail(msg,name,num,pay,t.grand);}
 };
 
 /* ---------- opening hours ---------- */
