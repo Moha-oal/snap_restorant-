@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>مطعم سناب | Snap Restaurant — مطبخ عربي، معصوب ومندي في سري كمبانجان</title>
 <meta name="description" content="مطعم سناب — مطبخ يمني عربي في One South، سري كمبانجان. حنيذ، مندي، معصوب، شاورما وتميس طازج. مفتوح يوميًا من 10 صباحًا حتى 4 فجرًا. 017-669 3919">
 <meta name="theme-color" content="#0C0A09">
@@ -39,7 +39,7 @@ body{
   -webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
 body::after{ /* film grain */
-  content:"";position:fixed;inset:0;z-index:80;pointer-events:none;opacity:.045;
+  content:"";position:fixed;inset:0;height:100dvh;z-index:80;pointer-events:none;opacity:.045;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 img,svg{display:block;max-width:100%}
@@ -242,9 +242,9 @@ footer a:hover{color:var(--gold)}
   display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#7C6F62;font-size:13px}
 
 /* ============ CART DRAWER ============ */
-.scrim{position:fixed;inset:0;background:rgba(4,3,2,.72);backdrop-filter:blur(3px);z-index:90;opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim{position:fixed;inset:0;height:100dvh;background:rgba(4,3,2,.72);backdrop-filter:blur(3px);z-index:90;opacity:0;pointer-events:none;transition:opacity .25s}
 .scrim.on{opacity:1;pointer-events:auto}
-.drawer{position:fixed;inset-block:0;inset-inline-start:0;width:min(408px,100%);background:var(--night-2);
+.drawer{position:fixed;inset-block:0;inset-inline-start:0;height:100dvh;width:min(408px,100%);background:var(--night-2);
   z-index:95;display:flex;flex-direction:column;transform:translateX(102%);transition:transform .3s cubic-bezier(.4,0,.2,1);
   border-inline-end:1px solid var(--line)}
 .drawer.on{transform:translateX(0)}
@@ -268,10 +268,10 @@ footer a:hover{color:var(--gold)}
   border-top:1px dashed var(--line);padding-top:12px}
 
 /* ============ CHECKOUT MODAL ============ */
-.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:18px}
+.modal{position:fixed;inset:0;height:100dvh;z-index:100;display:none;align-items:center;justify-content:center;padding:18px}
 .modal.on{display:flex}
 .sheet{background:var(--night-2);border:1px solid var(--line);border-radius:20px;width:min(520px,100%);
-  max-height:92vh;overflow-y:auto;box-shadow:0 30px 90px rgba(0,0,0,.7)}
+  max-height:92vh;max-height:92dvh;overflow-y:auto;box-shadow:0 30px 90px rgba(0,0,0,.7)}
 .sheet-h{position:sticky;top:0;background:var(--night-2);display:flex;align-items:center;justify-content:space-between;
   padding:18px 22px;border-bottom:1px solid var(--line);z-index:2}
 .sheet-h h3{font-family:'Rakkas',serif;font-weight:400;font-size:24px;color:var(--gold-lt)}
@@ -305,11 +305,13 @@ label.f>span{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;co
 @keyframes sp{to{transform:rotate(360deg)}}
 
 /* toast + wa float */
-.toast{position:fixed;inset-block-end:24px;inset-inline-start:50%;transform:translate(50%,120%);
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));inset-inline-start:50%;
+  transform:translate(50%,120%);visibility:hidden;opacity:0;pointer-events:none;
   background:var(--gold);color:#3A2404;font-weight:800;font-size:14.5px;padding:12px 22px;border-radius:30px;
-  z-index:110;transition:transform .3s;box-shadow:0 10px 30px rgba(0,0,0,.5);white-space:nowrap}
-.toast.on{transform:translate(50%,0)}
-.wa{position:fixed;inset-block-end:22px;inset-inline-end:22px;width:56px;height:56px;border-radius:50%;
+  z-index:85;transition:transform .3s,opacity .3s,visibility .3s;box-shadow:0 10px 30px rgba(0,0,0,.5);white-space:nowrap}
+.toast.on{transform:translate(50%,0);visibility:visible;opacity:1;pointer-events:auto}
+.modal.on ~ .toast,.modal.on ~ .toast.on{visibility:hidden;opacity:0;pointer-events:none}
+.wa{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));inset-inline-end:22px;width:56px;height:56px;border-radius:50%;
   background:#1FA855;display:grid;place-items:center;z-index:70;box-shadow:0 8px 24px rgba(31,168,85,.42)}
 .wa:hover{transform:scale(1.06)}
 
